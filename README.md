@@ -2,85 +2,199 @@
 
 Workflow de desenvolvimento orientado por especificação (SDD) para projetos Claude Code.
 
-Três agentes portáveis + templates + script de bootstrap. Funciona em qualquer projeto — nenhum agente contém contexto de projeto específico.
+Três agentes portáveis + templates + scripts de bootstrap. Nenhum agente contém contexto de projeto — funcionam em qualquer repositório.
 
-## O que está incluído
+---
 
-```
-agents/
-  implementador.md        # Orquestrador principal
-  task-runner.md          # Executor de tasks com checkpoint
-  constitution-manager.md # Gestor da constituição (init / review / amend)
+## Requisitos
 
-templates/
-  constitution-template.md    # Template inicial da constitution
-  agent-context-template.md   # Template do contexto comportamental
-  MEMORY-template.md          # Template do índice de memória persistente
-  workflow-memory.md          # Entrada de memória que ativa o implementador automaticamente
+- [Claude Code](https://claude.ai/code) instalado
+- Git
+- PowerShell (Windows) ou bash (Linux/macOS)
 
-init-workflow.ps1   # Script de instalação (Windows/PowerShell)
-init-workflow.sh    # Script de instalação (Linux/macOS/bash)
-```
+---
 
-## Instalação
+## Instalação em 2 passos
 
-Na raiz do projeto:
+### Passo 1 — Clonar o workflow
 
-**Windows (PowerShell):**
 ```powershell
-& "C:\path\to\workflow-sdd\init-workflow.ps1"
+git clone https://github.com/figueiredoalfs/workflow-sdd.git
 ```
 
-**Linux/macOS:**
+### Passo 2 — Configurar o comando global `wfsdd`
+
+**Windows — rodar o setup automático (recomendado):**
+```
+setup.bat
+```
+
+**Windows — manual:**
+```powershell
+& "C:\path\to\workflow-sdd\setup.ps1"
+```
+
+**Linux/macOS — manual:**
 ```bash
-bash /path/to/workflow-sdd/init-workflow.sh
+bash /path/to/workflow-sdd/setup.sh
 ```
 
-O script:
-- Copia os três agentes para `.claude/agents/`
-- Cria `.claude/agent-context.md` (se não existir)
-- Garante `.specify/memory/` para a constitution
-- Cria `MEMORY.md` com o gatilho de auto-invocação do implementador na memória persistente do Claude Code
-- Avisa se `specs/` está no `.gitignore`
+O setup adiciona a função `wfsdd` ao perfil do PowerShell (ou `~/.bashrc`/`~/.zshrc`), tornando o comando disponível em todo terminal.
 
-## Uso
+---
 
-Após instalar, abra o projeto no Claude Code.
+## Comandos disponíveis
 
-O `MEMORY.md` faz o Claude carregar automaticamente a instrução de usar o implementador em toda nova conversa.
-
-Para invocar manualmente: `/imp`
-
-## Fluxo
-
-```
-Projeto novo?
-  └─ implementador detecta ausência de constitution
-     └─ chama constitution-manager init
-        └─ entrevista → gera CLAUDE.md + constitution.md + agent-context.md
-           └─ volta ao implementador → entrevista de feature → ...
-
-Projeto existente?
-  └─ implementador lê constitution + CLAUDE.md + agent-context
-     └─ entrevista de feature
-        └─ análise de tamanho
-           ├─ < 300 linhas → bypass (implementa diretamente)
-           └─ ≥ 300 linhas → Speckit (specify → plan → tasks) → task-runner
-```
-
-## Casos cobertos
-
-| Caso | O que acontece |
+| Comando | O que faz |
 |---|---|
-| Projeto do zero | `constitution-manager init` — entrevista completa, gera todos os artefatos |
-| Projeto com CLAUDE.md mas sem constitution | `constitution-manager review` — mapeia lacunas, reentrevista o necessário |
-| Constitution desatualizada | `/imp` → `constitution-manager review` — usuário solicita reentrevista |
-| Anti-padrão descoberto durante desenvolvimento | `constitution-manager amend` — proposta → aprovação → bump de versão |
+| `wfsdd init` | Instala o workflow no projeto atual (rodar na raiz do projeto) |
+| `wfsdd update` | Puxa atualizações do repositório e reinstala nos projetos |
+| `wfsdd version` | Exibe versão local e remota; avisa se há atualização disponível |
 
-## Agentes individuais
+---
 
-| Agente | Quando invocar |
-|---|---|
-| `/imp` | Qualquer feature ou correção |
-| `constitution-manager` | Direto quando quiser fazer review ou amend sem implementar |
-| `task-runner` | Raramente — normalmente invocado pelo implementador |
+## Como usar em um projeto
+
+### Projeto novo
+
+```powershell
+cd meu-projeto
+wfsdd init
+```
+
+Abrir o projeto no Claude Code — o agente `implementador` detecta a ausência da constitution e inicia o bootstrap automaticamente (entrevista → gera `CLAUDE.md` + `constitution.md`).
+
+### Projeto existente
+
+```powershell
+cd projeto-existente
+wfsdd init
+```
+
+O `implementador` detecta os arquivos existentes e entra direto no fluxo de feature. Se algum arquivo estiver desatualizado, chama o `constitution-manager review`.
+
+### Invocar o implementador manualmente
+
+No Claude Code:
+```
+/imp
+```
+
+---
+
+## Fluxo de desenvolvimento
+
+```
+Abrir projeto no Claude Code
+  └─ MEMORY.md carrega instrução de usar o implementador automaticamente
+
+Pedir uma feature ou correção
+  └─ implementador é invocado (/imp ou automático)
+     │
+     ├─ Etapa 0: detectar estado do projeto
+     │   ├─ sem constitution → constitution-manager init (bootstrap)
+     │   ├─ CLAUDE.md incompleto → constitution-manager review
+     │   └─ tudo OK → continuar
+     │
+     ├─ Etapa 1: entrevista com o usuário
+     │
+     ├─ Etapa 2: análise de tamanho
+     │   ├─ < 300 linhas → bypass (implementa direto)
+     │   └─ ≥ 300 linhas → fluxo SDD
+     │       └─ /speckit-specify → /speckit-plan → /speckit-tasks
+     │           └─ aprovação do usuário → task-runner
+     │
+     └─ Etapa 5: documentação + emendas + deploy
+         └─ se anti-padrão descoberto → constitution-manager amend
+```
+
+---
+
+## Agentes
+
+### `implementador`
+Orquestrador principal. Detecta o estado do projeto, entrevista o usuário, orquestra o Speckit e delega ao `task-runner`.
+
+**Invocar:** `/imp`
+
+### `task-runner`
+Executa tasks do `tasks.md` uma a uma. Para cada task: implementa → executa checkpoint → passa: commit + próxima / falha: revisa (máx 2x) → reporta.
+
+**Invocar:** normalmente chamado pelo `implementador`. Para uso direto, informar o caminho do `tasks.md`.
+
+### `constitution-manager`
+Gerencia a constituição do projeto em três modos:
+
+| Modo | Quando usar | Como invocar |
+|---|---|---|
+| `init` | Projeto novo sem constitution | Automático via `implementador` |
+| `review` | Reentrevistar ou atualizar contexto desatualizado | `/imp` ou direto |
+| `amend` | Proposta pontual de nova lei/anti-padrão | Automático após bug fix |
+
+---
+
+## Estrutura instalada no projeto
+
+Após `wfsdd init`, o projeto recebe:
+
+```
+.claude/
+  agents/
+    implementador.md        ← orquestrador
+    task-runner.md          ← executor de tasks
+    constitution-manager.md ← gestor da constitution
+  agent-context.md          ← contexto comportamental (atualizado pelo agente)
+
+.specify/
+  memory/
+    constitution.md         ← gerado pelo constitution-manager init
+```
+
+E na memória persistente do Claude Code (`~/.claude/projects/.../memory/`):
+```
+MEMORY.md       ← índice com ponteiro para workflow.md
+workflow.md     ← instrução de auto-invocação do implementador
+```
+
+---
+
+## Controle de versão dos agentes
+
+Verificar versão local vs remota:
+```powershell
+wfsdd version
+# workflow-sdd
+#   local : 1.0.0
+#   remote: 1.0.0
+```
+
+Atualizar:
+```powershell
+wfsdd update
+```
+
+Para bumpar a versão ao editar os agentes, atualizar `version.txt` na raiz do repositório antes do push.
+
+---
+
+## Estrutura do repositório
+
+```
+workflow-sdd/
+├── agents/
+│   ├── implementador.md
+│   ├── task-runner.md
+│   └── constitution-manager.md
+├── templates/
+│   ├── constitution-template.md
+│   ├── agent-context-template.md
+│   ├── MEMORY-template.md
+│   └── workflow-memory.md
+├── setup.bat               ← configuração automática (Windows, duplo clique)
+├── setup.ps1               ← configuração PowerShell
+├── setup.sh                ← configuração bash
+├── init-workflow.ps1       ← instala em um projeto (chamado pelo wfsdd init)
+├── init-workflow.sh        ← instala em um projeto (bash)
+├── version.txt
+└── README.md
+```
