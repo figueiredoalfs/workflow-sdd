@@ -1,4 +1,4 @@
-# setup.ps1 — configura o comando wfsdd no perfil do PowerShell
+# setup.ps1 - configura o comando wfsdd no perfil do PowerShell
 param([string]$WorkflowRepo = $PSScriptRoot)
 
 $WorkflowRepo = (Resolve-Path $WorkflowRepo).Path
@@ -24,13 +24,13 @@ if ($content -match "function wfsdd") {
         Set-Content $profilePath $newContent -Encoding UTF8
         Write-Host "    [OK] Caminho do repositorio atualizado no perfil"
     } else {
-        Write-Host "    [--] wfsdd ja configurado no perfil — nenhuma alteracao necessaria"
+        Write-Host "    [--] wfsdd ja configurado no perfil - nenhuma alteracao necessaria"
     }
 } else {
     # Adicionar funcao ao perfil
     $function = @"
 
-# workflow-sdd — gerencia o workflow SDD
+# workflow-sdd - gerencia o workflow SDD
 # Uso: wfsdd <init|update|version>
 function wfsdd {
     param([string]`$Command = "help")
