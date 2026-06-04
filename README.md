@@ -143,6 +143,8 @@ Após `wfsdd init`, o projeto recebe:
     implementador.md        ← orquestrador
     task-runner.md          ← executor de tasks
     constitution-manager.md ← gestor da constitution
+  skills/
+    imp/SKILL.md            ← comando /imp (invoca o implementador)
   agent-context.md          ← contexto comportamental (atualizado pelo agente)
 
 .specify/
@@ -189,7 +191,8 @@ workflow-sdd/
 │   ├── constitution-template.md
 │   ├── agent-context-template.md
 │   ├── MEMORY-template.md
-│   └── workflow-memory.md
+│   ├── workflow-memory.md
+│   └── skills/imp/SKILL.md   ← template do comando /imp
 ├── setup.bat               ← configuração automática (Windows, duplo clique)
 ├── setup.ps1               ← configuração PowerShell
 ├── setup.sh                ← configuração bash

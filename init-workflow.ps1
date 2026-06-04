@@ -20,6 +20,12 @@ Copy-Item "$WorkflowRepo\agents\task-runner.md"          "$agentsDir\task-runner
 Copy-Item "$WorkflowRepo\agents\constitution-manager.md" "$agentsDir\constitution-manager.md"  -Force
 Write-Host "    [OK] Agentes copiados para .claude/agents/"
 
+# 1b. Comando /imp (skill que invoca o agente implementador)
+$impSkillDir = Join-Path $Project ".claude\skills\imp"
+if (-not (Test-Path $impSkillDir)) { New-Item -ItemType Directory -Force $impSkillDir | Out-Null }
+Copy-Item "$WorkflowRepo\templates\skills\imp\SKILL.md" (Join-Path $impSkillDir "SKILL.md") -Force
+Write-Host "    [OK] Comando /imp criado em .claude/skills/imp/"
+
 # 2. agent-context (só cria se não existir - não sobrescrever customizações)
 $agentContext = "$Project\.claude\agent-context.md"
 if (-not (Test-Path $agentContext)) {

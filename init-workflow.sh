@@ -17,6 +17,11 @@ cp "$WORKFLOW_REPO/agents/task-runner.md"          "$PROJECT/.claude/agents/task
 cp "$WORKFLOW_REPO/agents/constitution-manager.md" "$PROJECT/.claude/agents/constitution-manager.md"
 echo "    [OK] Agentes copiados para .claude/agents/"
 
+# 1b. Comando /imp (skill que invoca o agente implementador)
+mkdir -p "$PROJECT/.claude/skills/imp"
+cp "$WORKFLOW_REPO/templates/skills/imp/SKILL.md" "$PROJECT/.claude/skills/imp/SKILL.md"
+echo "    [OK] Comando /imp criado em .claude/skills/imp/"
+
 # 2. agent-context (só cria se não existir)
 if [ ! -f "$PROJECT/.claude/agent-context.md" ]; then
     cp "$WORKFLOW_REPO/templates/agent-context-template.md" "$PROJECT/.claude/agent-context.md"
