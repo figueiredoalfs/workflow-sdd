@@ -64,5 +64,14 @@ fi
 
 echo ""
 echo "==> Configuracao concluida."
-echo "    Abra um novo terminal ou rode: source $PROFILE"
-echo "    Depois use: wfsdd init (na raiz de um projeto)"
+
+# Se o setup foi rodado de dentro de um projeto-alvo (nao do proprio repo workflow-sdd),
+# instalar o workflow (agentes, skills e /imp) direto nesse projeto.
+CURRENT_DIR="$(pwd)"
+if [ "$CURRENT_DIR" != "$WORKFLOW_REPO" ]; then
+    echo "    Instalando workflow no projeto atual: $CURRENT_DIR"
+    bash "$WORKFLOW_REPO/init-workflow.sh"
+else
+    echo "    Abra um novo terminal ou rode: source $PROFILE"
+    echo "    Depois use: wfsdd init (na raiz de um projeto)"
+fi

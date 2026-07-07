@@ -6,8 +6,8 @@ $WorkflowRepo = (Resolve-Path $WorkflowRepo).Path
 Write-Host "==> Configurando workflow-sdd"
 Write-Host "    Repositorio: $WorkflowRepo"
 
-# Detectar perfil ativo
-$profilePath = $PROFILE.CurrentUserAllHosts
+# Detectar perfil ativo (CurrentUserCurrentHost -- o unico garantido carregado por todos os hosts)
+$profilePath = $PROFILE.CurrentUserCurrentHost
 if (-not $profilePath) { $profilePath = "$env:USERPROFILE\Documents\WindowsPowerShell\Microsoft.PowerShell_profile.ps1" }
 
 # Criar pasta e arquivo se nao existirem
@@ -75,5 +75,14 @@ function wfsdd {
 
 Write-Host ""
 Write-Host "==> Configuracao concluida."
-Write-Host "    Abra um novo terminal e use: wfsdd init (na raiz de um projeto)"
-Write-Host "    Para aplicar sem reiniciar: . `"$profilePath`""
+
+# Se o setup foi rodado de dentro de um projeto-alvo (nao do proprio repo workflow-sdd),
+# instalar o workflow (agentes, skills e /imp) direto nesse projeto.
+$currentDir = (Get-Location).Path
+if ($currentDir -ne $WorkflowRepo) {
+    Write-Host "    Instalando workflow no projeto atual: $currentDir"
+    & "$WorkflowRepo\init-workflow.ps1" -WorkflowRepo $WorkflowRepo
+} else {
+    Write-Host "    Abra um novo terminal e use: wfsdd init (na raiz de um projeto)"
+}
+Write-Host "    Para aplicar wfsdd sem reiniciar o terminal: . `"$profilePath`""

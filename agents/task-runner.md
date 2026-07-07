@@ -29,14 +29,27 @@ Para cada task pendente (`- [ ]`) no `tasks.md`, execute:
 1. Ler a task completa (descrição + Checkpoint)
 2. Verificar se a task tem Checkpoint definido
    — Se não tiver: PARAR e reportar ao usuário antes de implementar
-3. Implementar a task
-4. Executar o Checkpoint
-5. Passou?
-   → SIM: marcar task como concluída ([x]), fazer commit, avançar para próxima
-   → NÃO: revisar a implementação e voltar ao passo 3
-           Se após 2 revisões o checkpoint ainda falhar:
+3. Confirmar/escrever o Checkpoint como cenário de comportamento
+   (visão do usuário final, ex: comando → resposta esperada) e
+   garantir que ele FALHA antes de implementar (red)
+4. Implementar a task, usando testes unitários de apoio como andaime
+   quando útil — criar, ajustar ou descartar livremente durante o
+   ciclo, sem reportar cada ajuste ao usuário
+5. Executar o Checkpoint (comportamento)
+6. Passou?
+   → SIM: descartar testes de apoio que não agregam valor de regressão
+           duradouro, marcar task concluída ([x]), commit, avançar
+   → NÃO: é bug real — revisar a implementação e voltar ao passo 4
+           Se um teste UNITÁRIO de apoio falhar mas o Checkpoint (comportamento)
+           passar, isso é ruído de implementação — ajustar ou descartar o
+           teste de apoio sem que conte como tentativa de revisão
+           Se após 2 revisões o Checkpoint ainda falhar:
            PARAR, reportar o erro ao usuário e aguardar orientação
 ```
+
+**Critério de bloqueio é sempre o Checkpoint (comportamento), nunca um teste unitário de apoio.**
+Testes unitários existem para guiar o design da implementação durante o ciclo — não têm
+poder de veto isolado sobre o avanço da task.
 
 ---
 

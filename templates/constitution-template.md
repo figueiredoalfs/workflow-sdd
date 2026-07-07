@@ -32,16 +32,29 @@ Tasks maiores devem ser subdivididas. Tasks de documentação não contam no lim
 
 ### Artefato testável obrigatório por task
 
-Cada task DEVE ter um **Checkpoint** com critério de teste concreto e verificável.
+Cada task DEVE ter um **Checkpoint** com critério de teste concreto e verificável, na
+perspectiva de comportamento observável (ex: comando → resposta, endpoint → resultado).
 Tasks sem checkpoint não são válidas.
+
+### Testes de comportamento (permanentes) vs. testes de apoio (descartáveis)
+
+O Checkpoint é sempre um cenário de **comportamento** (visão do usuário final) — nasce
+antes da implementação, vira regressão permanente e é o único critério de bloqueio da task.
+
+Testes unitários de apoio (andaime interno de TDD) podem ser criados, ajustados ou
+descartados livremente durante a implementação. Eles guiam o design, mas não têm poder
+de veto isolado: uma falha em teste de apoio com o Checkpoint passando é ruído de
+implementação, não bug — não bloqueia o avanço da task nem conta como tentativa de revisão.
 
 ### Loop de implementação por task
 
 ```
-1. Implementar a task
-2. Executar o checkpoint
-3. Passou? → commit imediato + próxima task
-   Falhou? → revisar → voltar ao passo 2
+1. Escrever/confirmar o Checkpoint (comportamento) — deve FALHAR antes de implementar (red)
+2. Implementar, usando testes de apoio como andaime (descartável)
+3. Executar o Checkpoint
+4. Passou? → descartar testes de apoio sem valor de regressão duradouro,
+             commit imediato + próxima task
+   Falhou? → bug real — revisar → voltar ao passo 2
              (após 2 revisões ainda falhar → parar e reportar ao usuário)
 ```
 

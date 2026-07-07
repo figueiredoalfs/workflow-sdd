@@ -39,7 +39,7 @@ setup.bat
 bash /path/to/workflow-sdd/setup.sh
 ```
 
-O setup adiciona a função `wfsdd` ao perfil do PowerShell (ou `~/.bashrc`/`~/.zshrc`), tornando o comando disponível em todo terminal.
+O setup adiciona a função `wfsdd` ao perfil do PowerShell (ou `~/.bashrc`/`~/.zshrc`), tornando o comando disponível em todo terminal. Se rodado de dentro de um projeto (não do próprio repositório `workflow-sdd`), já instala o workflow nesse projeto automaticamente — não é necessário rodar `wfsdd init` em seguida.
 
 ---
 
@@ -75,9 +75,14 @@ O `implementador` detecta os arquivos existentes e entra direto no fluxo de feat
 
 ### Invocar o implementador manualmente
 
-No Claude Code:
+No Claude Code ou Cursor:
 ```
 /imp
+```
+
+Comandos Speckit (instalados automaticamente pelo `wfsdd init`):
+```
+/speckit-specify → /speckit-plan → /speckit-tasks
 ```
 
 ---
@@ -139,17 +144,23 @@ Após `wfsdd init`, o projeto recebe:
 
 ```
 .claude/
-  agents/
-    implementador.md        ← orquestrador
-    task-runner.md          ← executor de tasks
-    constitution-manager.md ← gestor da constitution
+  agents/                   implementador, task-runner, constitution-manager
   skills/
-    imp/SKILL.md            ← comando /imp (invoca o implementador)
-  agent-context.md          ← contexto comportamental (atualizado pelo agente)
+    imp/                    /imp (Claude Code)
+    speckit-*/              specify, plan, tasks, implement, git hooks, ...
+  agent-context.md
+
+.cursor/
+  skills/
+    imp/                    /imp (Cursor)
+    speckit-*/              mesmos comandos Speckit
 
 .specify/
-  memory/
-    constitution.md         ← gerado pelo constitution-manager init
+  memory/constitution.md    gerada ou preservada
+  scripts/powershell/       spec-kit (create-new-feature, setup-plan, ...)
+  templates/                spec, plan, tasks
+  extensions/git/           hooks de branch e commit
+  feature.json              feature ativa (criado ou preservado)
 ```
 
 E na memória persistente do Claude Code (`~/.claude/projects/.../memory/`):
@@ -187,12 +198,17 @@ workflow-sdd/
 │   ├── implementador.md
 │   ├── task-runner.md
 │   └── constitution-manager.md
+├── docs/
+│   └── log-implementacao.md  ← histórico de correções do init
 ├── templates/
 │   ├── constitution-template.md
 │   ├── agent-context-template.md
 │   ├── MEMORY-template.md
 │   ├── workflow-memory.md
-│   └── skills/imp/SKILL.md   ← template do comando /imp
+│   ├── speckit/              ← bundle .specify/ (scripts, templates, git hooks)
+│   └── skills/
+│       ├── imp/              ← SKILL.md (Claude) + SKILL.cursor.md (Cursor)
+│       └── speckit-*/        ← 14 skills Speckit
 ├── setup.bat               ← configuração automática (Windows, duplo clique)
 ├── setup.ps1               ← configuração PowerShell
 ├── setup.sh                ← configuração bash

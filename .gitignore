@@ -1,0 +1,5 @@
+# Artefatos gerados ao rodar wfsdd init/update dentro do proprio repo workflow-sdd
+/.claude/
+/.cursor/
+/.specify/
+/specs/
