@@ -1,8 +1,15 @@
 #!/usr/bin/env bash
 # setup.sh — configura o comando wfsdd no shell (bash/zsh)
-set -e
+# Pode ser rodado com "bash setup.sh" ou "source setup.sh" (recomendado — ver final do script).
 
-WORKFLOW_REPO="$(cd "$(dirname "$0")" && pwd)"
+# "$0" nao e confiavel quando o script e "sourced" (vira o nome do shell pai, nao o path
+# do arquivo). BASH_SOURCE[0] funciona nos dois casos em bash; zsh usa $0 dentro de source.
+if [ -n "$BASH_SOURCE" ]; then
+    SETUP_SRC="${BASH_SOURCE[0]}"
+else
+    SETUP_SRC="$0"
+fi
+WORKFLOW_REPO="$(cd "$(dirname "$SETUP_SRC")" && pwd)"
 
 echo "==> Configurando workflow-sdd"
 echo "    Repositorio: $WORKFLOW_REPO"
@@ -71,7 +78,16 @@ CURRENT_DIR="$(pwd)"
 if [ "$CURRENT_DIR" != "$WORKFLOW_REPO" ]; then
     echo "    Instalando workflow no projeto atual: $CURRENT_DIR"
     bash "$WORKFLOW_REPO/init-workflow.sh"
+fi
+
+# Carregar a funcao wfsdd na sessao atual, se o script foi "sourced" (nao executado
+# como subprocesso). Rodar via "bash setup.sh" nao propaga a funcao para o shell pai —
+# isso e uma limitacao do bash, nao um bug: use "source setup.sh" para evitar o passo extra.
+if (return 0 2>/dev/null); then
+    source "$PROFILE"
+    echo "    [OK] wfsdd disponivel nesta sessao (script foi 'sourced')"
 else
-    echo "    Abra um novo terminal ou rode: source $PROFILE"
-    echo "    Depois use: wfsdd init (na raiz de um projeto)"
+    echo "    [!] Rode 'source $PROFILE' (ou abra um novo terminal) para usar wfsdd agora"
+    echo "        Dica: da proxima vez rode 'source setup.sh' em vez de 'bash setup.sh'"
+    echo "        para que wfsdd fique disponivel na sessao atual automaticamente"
 fi

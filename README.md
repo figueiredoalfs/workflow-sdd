@@ -34,10 +34,11 @@ setup.bat
 & "C:\path\to\workflow-sdd\setup.ps1"
 ```
 
-**Linux/macOS — manual:**
+**Linux/macOS / Git Bash — manual:**
 ```bash
-bash /path/to/workflow-sdd/setup.sh
+source /path/to/workflow-sdd/setup.sh
 ```
+(usar `source`, não `bash`, para que `wfsdd` fique disponível na sessão atual sem precisar abrir um novo terminal)
 
 O setup adiciona a função `wfsdd` ao perfil do PowerShell (ou `~/.bashrc`/`~/.zshrc`), tornando o comando disponível em todo terminal. Se rodado de dentro de um projeto (não do próprio repositório `workflow-sdd`), já instala o workflow nesse projeto automaticamente — não é necessário rodar `wfsdd init` em seguida.
 
